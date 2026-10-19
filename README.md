@@ -187,11 +187,11 @@ To clear the local replica, remove the `studyvault_*` entries from the browser's
 
 See [requirements.txt](requirements.txt) for the complete list:
 
-- `fastapi` and `uvicorn[standard]` — web API and ASGI server
-- `sqlalchemy` and `psycopg2-binary` — PostgreSQL persistence
-- `pydantic` — request validation and serialization
-- `python-dotenv` — environment configuration
-- `httpx` — HTTP client and test utilities
+- `fastapi` and `uvicorn[standard]` — web API and ASGI server.
+- `sqlalchemy` and `psycopg2-binary` — PostgreSQL persistence.
+- `pydantic` — request validation and serialization.
+- `python-dotenv` — environment configuration.
+- `httpx` — HTTP client and test utilities.
 
 ## License
 
