@@ -97,6 +97,8 @@
   }
 
   async function loadRegisteredUsers() {
+    const authSwitchSection = document.getElementById('authSwitchSection');
+    if (authSwitchSection && authSwitchSection.style.display === 'none') return;
     const authUsersPillList = document.getElementById('authUsersPillList');
     const authUsernameInput = document.getElementById('authUsernameInput');
     const authPasswordInput = document.getElementById('authPasswordInput');
@@ -198,23 +200,6 @@
       }
     });
 
-    // Filter My Notes Toggle
-    if (filterMyNotesBtn) {
-      filterMyNotesBtn.addEventListener('click', async () => {
-        if (!window.notesStore) return;
-        const nextFilter = window.notesStore.userFilter === 'mine' ? 'all' : 'mine';
-        window.notesStore.setUserFilter(nextFilter);
-        updateAuthUI();
-        if (userDropdownPopover) userDropdownPopover.style.display = 'none';
-        if (typeof window.showToast === 'function') {
-          window.showToast(nextFilter === 'mine' ? 'Showing only your notes' : 'Showing all notes', 'info');
-        }
-        await window.notesStore.refreshAll();
-        if (typeof window.renderStats === 'function') window.renderStats();
-        if (typeof window.renderNotes === 'function') window.renderNotes();
-      });
-    }
-
     // Switch User button
     if (switchUserBtn) {
       switchUserBtn.addEventListener('click', () => {
@@ -230,7 +215,6 @@
         if (window.notesAPI) await window.notesAPI.logout();
         if (window.notesStore) {
           window.notesStore.setCurrentUser(null);
-          window.notesStore.setUserFilter('all');
         }
         updateAuthUI();
         if (typeof window.showToast === 'function') {
@@ -240,6 +224,46 @@
           await window.notesStore.refreshAll();
           if (typeof window.renderStats === 'function') window.renderStats();
           if (typeof window.renderNotes === 'function') window.renderNotes();
+        }
+      });
+    }
+
+    // Delete Account button
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    if (deleteAccountBtn) {
+      deleteAccountBtn.addEventListener('click', async () => {
+        if (userDropdownPopover) userDropdownPopover.style.display = 'none';
+
+        const currentUser = window.notesStore?.currentUser;
+        if (!currentUser) return;
+
+        const confirmMsg = `Are you sure you want to permanently delete your account "${currentUser.username}" and all your associated notes?\n\nThis action cannot be undone.`;
+        if (!confirm(confirmMsg)) {
+          return;
+        }
+
+        try {
+          if (window.notesAPI) {
+            await window.notesAPI.deleteUser(currentUser.id);
+          }
+          if (window.notesStore) {
+            window.notesStore.setCurrentUser(null);
+            window.notesStore.setUserFilter('all');
+          }
+          updateAuthUI();
+          if (typeof window.showToast === 'function') {
+            window.showToast(`Account "${currentUser.username}" was permanently deleted.`, 'info');
+          }
+          if (window.notesStore) {
+            await window.notesStore.refreshAll();
+            if (typeof window.renderStats === 'function') window.renderStats();
+            if (typeof window.renderSubjectPills === 'function') window.renderSubjectPills();
+            if (typeof window.renderNotes === 'function') window.renderNotes();
+          }
+        } catch (err) {
+          if (typeof window.showToast === 'function') {
+            window.showToast(err.message || 'Failed to delete account', 'error');
+          }
         }
       });
     }

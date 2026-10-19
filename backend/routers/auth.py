@@ -106,3 +106,44 @@ def list_users(db: Session = Depends(get_db)):
 def logout():
     """Client-side logout endpoint."""
     return {"message": "Logged out successfully"}
+
+
+@router.delete("/me", status_code=status.HTTP_200_OK)
+def delete_my_account(
+    user_id: Optional[int] = Query(None),
+    x_user_id: Optional[int] = Header(None, alias="X-User-Id"),
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Permanently delete the currently authenticated user's account and notes."""
+    target_id = user_id or x_user_id
+    if not target_id and authorization and authorization.startswith("Bearer usr_"):
+        try:
+            parts = authorization.split(" ")[1].split("_")
+            if len(parts) >= 2 and parts[1].isdigit():
+                target_id = int(parts[1])
+        except Exception:
+            pass
+
+    if not target_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to delete account."
+        )
+
+    deleted = auth_service.delete_user(db, target_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return {"message": "User account and all associated notes deleted successfully", "deleted_user_id": target_id}
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_200_OK)
+def delete_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    """Permanently delete a user account by ID."""
+    deleted = auth_service.delete_user(db, user_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {user_id} not found")
+
+    return {"message": f"User {user_id} and all associated notes deleted successfully", "deleted_user_id": user_id}
+

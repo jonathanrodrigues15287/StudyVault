@@ -104,3 +104,18 @@ def get_user_by_username(db: Session, username: str) -> Optional[User]:
 def get_all_users(db: Session) -> List[User]:
     """Return all registered users ordered by registration date."""
     return db.query(User).order_by(User.id.asc()).all()
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    """Permanently delete a user and cascade delete their notes."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+    try:
+        db.delete(user)
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        raise
+

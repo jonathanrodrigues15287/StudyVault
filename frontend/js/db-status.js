@@ -1,7 +1,7 @@
 /**
  * Student Notes Manager - Database Status Monitor (db-status.js)
- * Manages PostgreSQL connection verification, heartbeat polling,
- * and on-demand database wake triggers.
+ * Manages database connection verification and online status indicators.
+ * Only displays online status without exposing the underlying database engine.
  */
 
 (function () {
@@ -13,58 +13,63 @@
     if (!dbStatusBadge) return;
 
     try {
-      const health = await window.notesAPI.checkHealth();
-      const dbInfo = health?.database_info || {};
+      if (window.notesAPI) {
+        await window.notesAPI.checkHealth();
+      }
 
       dbStatusBadge.textContent = 'Online';
       dbStatusBadge.classList.add('online-pulse');
       dbStatusBadge.style.color = 'var(--emerald)';
 
-      if (window.notesAPI?.isBackendReachable) {
-        const dbName = dbInfo.database || 'notes_db';
-        if (dbNameLabel) {
-          dbNameLabel.textContent = `PostgreSQL (${dbName})`;
-          dbNameLabel.title = `Connected to PostgreSQL • Size: ${dbInfo.file_size_formatted || 'Active'}`;
-        }
-      } else {
-        if (dbNameLabel) {
-          dbNameLabel.textContent = 'Local Database (Active)';
-          dbNameLabel.title = 'Active in browser vault • Auto-syncing with PostgreSQL';
-        }
+      if (dbNameLabel) {
+        dbNameLabel.textContent = 'Database';
+        dbNameLabel.removeAttribute('title');
       }
     } catch (err) {
       dbStatusBadge.textContent = 'Online';
       dbStatusBadge.classList.add('online-pulse');
       dbStatusBadge.style.color = 'var(--emerald)';
       if (dbNameLabel) {
-        dbNameLabel.textContent = 'Database Online';
+        dbNameLabel.textContent = 'Database';
+        dbNameLabel.removeAttribute('title');
       }
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const dbStatusBadge = document.getElementById('dbStatusBadge');
     const dbNameLabel = document.getElementById('dbNameLabel');
     const statBackendStatus = document.getElementById('statBackendStatus');
 
-    // Periodic background check to auto-detect PostgreSQL backend
+    if (dbNameLabel) {
+      dbNameLabel.textContent = 'Database';
+      dbNameLabel.removeAttribute('title');
+    }
+
+    // Periodic heartbeat check to maintain online status indicator
     setInterval(async () => {
       try {
         if (!window.notesAPI) return;
-        const health = await window.notesAPI.checkHealth();
-        if (window.notesAPI.isBackendReachable && dbNameLabel && !dbNameLabel.textContent.includes('PostgreSQL')) {
-          dbNameLabel.textContent = `PostgreSQL (${health?.database_info?.database || 'notes_db'})`;
+        await window.notesAPI.checkHealth();
+        if (dbStatusBadge) {
+          dbStatusBadge.textContent = 'Online';
+          dbStatusBadge.classList.add('online-pulse');
+          dbStatusBadge.style.color = 'var(--emerald)';
+        }
+        if (dbNameLabel) {
+          dbNameLabel.textContent = 'Database';
         }
       } catch (e) {
         /* background silent */
       }
     }, 8000);
 
-    // Click on status card to re-verify/wake database
+    // Click on status card to re-verify database
     if (statBackendStatus) {
       statBackendStatus.classList.add('clickable-stat-card');
       statBackendStatus.addEventListener('click', async () => {
         if (typeof window.showToast === 'function') {
-          window.showToast('Waking / verifying PostgreSQL database connection…', 'info');
+          window.showToast('Verifying database connection…', 'info');
         }
         await ensureDatabaseOnlineUI();
         try {
@@ -74,7 +79,7 @@
             if (typeof window.renderNotes === 'function') window.renderNotes();
           }
           if (typeof window.showToast === 'function') {
-            window.showToast('Database is online & connected!', 'success');
+            window.showToast('Database is online!', 'success');
           }
         } catch (err) {
           if (typeof window.showToast === 'function') {

@@ -103,10 +103,6 @@
               <strong id="dropdownUsername" class="user-full-name">username</strong>
             </div>
             <div class="dropdown-separator"></div>
-            <button class="dropdown-item" id="filterMyNotesBtn">
-              <i class="fa-solid fa-filter"></i>
-              <span id="filterMyNotesLabel">Show Only My Notes</span>
-            </button>
             <button class="dropdown-item" id="switchUserBtn">
               <i class="fa-solid fa-users"></i>
               <span>Switch User</span>
@@ -115,6 +111,10 @@
             <button class="dropdown-item logout-item" id="logoutBtn">
               <i class="fa-solid fa-arrow-right-from-bracket"></i>
               <span>Log Out</span>
+            </button>
+            <button class="dropdown-item delete-account-item" id="deleteAccountBtn" title="Permanently delete this user account">
+              <i class="fa-regular fa-trash-can"></i>
+              <span>Delete Account</span>
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@
             <i class="fa-solid fa-database"></i>
           </div>
           <div class="stat-meta">
-            <span class="stat-value badge-db" id="dbStatusBadge">Connected</span>
+            <span class="stat-value badge-db" id="dbStatusBadge">Online</span>
             <span class="stat-label" id="dbNameLabel">Database</span>
           </div>
         </div>
@@ -740,8 +740,8 @@
           </button>
         </form>
 
-        <!-- Quick Switch for Existing Accounts -->
-        <div class="auth-switch-section" id="authSwitchSection">
+        <!-- Quick Switch for Existing Accounts (Hidden) -->
+        <div class="auth-switch-section" id="authSwitchSection" style="display: none;">
           <div class="auth-switch-header">
             <span class="auth-switch-label"><i class="fa-solid fa-users"></i> Existing Users in Database:</span>
           </div>

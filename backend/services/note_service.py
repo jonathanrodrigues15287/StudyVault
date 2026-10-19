@@ -12,12 +12,15 @@ def get_notes(
     tag: Optional[str] = None,
     is_pinned: Optional[bool] = None,
     sort_by: str = "newest",
-    user_id: Optional[int] = None
+    user_id: Optional[int] = None,
+    require_user: bool = False
 ) -> List[Note]:
     query = db.query(Note)
 
     if user_id is not None:
         query = query.filter(Note.user_id == user_id)
+    elif require_user:
+        return []
 
     if search:
         search_pattern = f"%{search.strip()}%"
@@ -150,8 +153,15 @@ def delete_note(db: Session, note_id: int) -> bool:
         raise
 
 
-def get_subjects(db: Session) -> List[str]:
-    """Return distinct subject names from the subjects table + notes table (merged)."""
+def get_subjects(db: Session, user_id: Optional[int] = None) -> List[str]:
+    """Return distinct subject names. If user_id is given, returns subjects for that user only."""
+    if user_id is not None:
+        user_subjects = db.query(Note.subject).distinct().filter(
+            Note.user_id == user_id,
+            Note.subject != None
+        ).all()
+        return sorted(set(s[0] for s in user_subjects if s[0]))
+
     # Custom subjects from the subjects table
     custom = db.query(Subject.name).order_by(Subject.name.asc()).all()
     custom_names = [s[0] for s in custom if s[0]]
@@ -164,14 +174,15 @@ def get_subjects(db: Session) -> List[str]:
     return combined
 
 
-def get_subject_details(db: Session) -> List[SubjectDetail]:
-    """Return all custom subjects with their note counts."""
+def get_subject_details(db: Session, user_id: Optional[int] = None) -> List[SubjectDetail]:
+    """Return subjects with their note counts for the specified user."""
     subjects = db.query(Subject).order_by(Subject.name.asc()).all()
     result = []
     for subj in subjects:
-        count = db.query(func.count(Note.id)).filter(
-            Note.subject.ilike(subj.name)
-        ).scalar() or 0
+        query = db.query(func.count(Note.id)).filter(Note.subject.ilike(subj.name))
+        if user_id is not None:
+            query = query.filter(Note.user_id == user_id)
+        count = query.scalar() or 0
         result.append(SubjectDetail(name=subj.name, color=subj.color, note_count=count))
     return result
 
@@ -212,13 +223,18 @@ def delete_subject(db: Session, subject_name: str) -> bool:
 
 
 def get_stats(db: Session, user_id: Optional[int] = None) -> NoteStats:
-    notes_query = db.query(Note)
-    if user_id is not None:
-        notes_query = notes_query.filter(Note.user_id == user_id)
+    if user_id is None:
+        return NoteStats(
+            total_notes=0,
+            total_subjects=0,
+            total_pinned=0,
+            subjects=[]
+        )
 
+    notes_query = db.query(Note).filter(Note.user_id == user_id)
     total_notes = notes_query.count()
     total_pinned = notes_query.filter(Note.is_pinned == True).count()
-    subjects = get_subjects(db)
+    subjects = get_subjects(db, user_id=user_id)
     return NoteStats(
         total_notes=total_notes,
         total_subjects=len(subjects),

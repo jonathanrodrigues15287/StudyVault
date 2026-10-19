@@ -141,7 +141,7 @@
   font-family: var(--font-mono);
 }
 
-.form-group input,
+.form-group input:not(.auth-input),
 .form-group textarea {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
