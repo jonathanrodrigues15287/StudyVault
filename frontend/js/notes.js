@@ -1,5 +1,6 @@
 /**
  * Student Notes Manager - Notes State & Operations (notes.js)
+ * Manages store state with strict per-user note isolation.
  */
 
 class NotesStore {
@@ -12,16 +13,15 @@ class NotesStore {
       total_pinned: 0,
       subjects: []
     };
+    this.currentUser = window.notesAPI?.currentUser || null;
     this.filters = {
       search: '',
       subject: 'all',
       tag: '',
       is_pinned: null,
       sort_by: 'newest',
-      user_id: null
+      user_id: this.currentUser?.id || null
     };
-    this.currentUser = window.notesAPI?.currentUser || null;
-    this.userFilter = 'all'; // 'all' or 'mine'
     this.viewMode = localStorage.getItem('notes_view_mode') || 'grid';
     this.activeNote = null;
     this.isLoading = false;
@@ -29,33 +29,30 @@ class NotesStore {
 
   setCurrentUser(user) {
     this.currentUser = user;
+    if (this.currentUser?.id) {
+      this.filters.user_id = this.currentUser.id;
+    } else {
+      this.filters.user_id = null;
+    }
     if (window.notesAPI) {
       window.notesAPI.saveUserToStorage(user);
     }
   }
 
-  setUserFilter(filterMode) {
-    this.userFilter = filterMode;
-    if (filterMode === 'mine' && this.currentUser?.id) {
-      this.filters.user_id = this.currentUser.id;
-    } else {
-      this.filters.user_id = null;
-    }
-  }
-
-  // Load notes from API with active filters
+  // Load notes strictly belonging to current authenticated user
   async loadNotes() {
     this.isLoading = true;
     try {
-      // Sync user filter
-      if (this.userFilter === 'mine' && this.currentUser?.id) {
-        this.filters.user_id = this.currentUser.id;
-      } else {
-        this.filters.user_id = null;
+      if (!this.currentUser?.id) {
+        this.notes = [];
+        return this.notes;
       }
 
+      this.filters.user_id = this.currentUser.id;
       const data = await window.notesAPI.getNotes(this.filters);
-      this.notes = data || [];
+
+      // Strict client-side guarantee: only notes matching currentUser.id
+      this.notes = (data || []).filter(n => n.user_id === this.currentUser.id);
       return this.notes;
     } catch (error) {
       console.error('Failed to load notes:', error);
@@ -65,13 +62,19 @@ class NotesStore {
     }
   }
 
-  // Load stats & subjects
+  // Load stats & subjects strictly for current user
   async loadStats() {
     try {
-      const userIdParam = this.userFilter === 'mine' && this.currentUser?.id ? this.currentUser.id : null;
+      const userIdParam = this.currentUser?.id || null;
+      if (!userIdParam) {
+        this.stats = { total_notes: 0, total_subjects: 0, total_pinned: 0, subjects: [] };
+        this.subjects = [];
+        return { stats: this.stats, subjects: this.subjects };
+      }
+
       const [statsData, subjectsData] = await Promise.all([
         window.notesAPI.getStats(userIdParam).catch(() => null),
-        window.notesAPI.getSubjects().catch(() => [])
+        window.notesAPI.getSubjects(userIdParam).catch(() => [])
       ]);
 
       if (statsData) {
@@ -88,8 +91,9 @@ class NotesStore {
 
   // Create note
   async addNote(noteData) {
-    if (!noteData.user_id && this.currentUser?.id) {
+    if (this.currentUser?.id) {
       noteData.user_id = this.currentUser.id;
+      noteData.author = this.currentUser.username;
     }
     const created = await window.notesAPI.createNote(noteData);
     await this.refreshAll();
@@ -116,7 +120,7 @@ class NotesStore {
     await this.refreshAll();
   }
 
-  // Refresh both notes and statistics
+  // Refresh both notes and statistics for current user
   async refreshAll() {
     await Promise.all([this.loadNotes(), this.loadStats()]);
   }
@@ -142,8 +146,7 @@ class NotesStore {
     this.filters.search = '';
     this.filters.subject = 'all';
     this.filters.tag = '';
-    this.filters.user_id = null;
-    this.userFilter = 'all';
+    this.filters.user_id = this.currentUser?.id || null;
   }
 
   setViewMode(mode) {

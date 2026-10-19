@@ -483,17 +483,9 @@ document.addEventListener('DOMContentLoaded', () => {
       dbStatusBadge.classList.add('online-pulse');
       dbStatusBadge.style.color = 'var(--emerald)';
 
-      if (window.notesAPI.isBackendReachable) {
-        const dbName = dbInfo.database || 'notes_db';
-        if (dbNameLabel) {
-          dbNameLabel.textContent = `PostgreSQL (${dbName})`;
-          dbNameLabel.title = `Connected to PostgreSQL • Size: ${dbInfo.file_size_formatted || 'Active'}`;
-        }
-      } else {
-        if (dbNameLabel) {
-          dbNameLabel.textContent = 'Local Database (Active)';
-          dbNameLabel.title = 'Active in browser vault • Auto-syncing with PostgreSQL';
-        }
+      if (dbNameLabel) {
+        dbNameLabel.textContent = 'Database';
+        dbNameLabel.removeAttribute('title');
       }
     } catch (err) {
       // Even under unexpected error, maintain database online state
@@ -501,17 +493,21 @@ document.addEventListener('DOMContentLoaded', () => {
       dbStatusBadge.classList.add('online-pulse');
       dbStatusBadge.style.color = 'var(--emerald)';
       if (dbNameLabel) {
-        dbNameLabel.textContent = 'Database Online';
+        dbNameLabel.textContent = 'Database';
+        dbNameLabel.removeAttribute('title');
       }
     }
   }
 
-  // Periodic background check to auto-detect PostgreSQL backend
+  // Periodic background check to maintain database online state
   setInterval(async () => {
     try {
-      const health = await window.notesAPI.checkHealth();
-      if (window.notesAPI.isBackendReachable && dbNameLabel && !dbNameLabel.textContent.includes('PostgreSQL')) {
-        dbNameLabel.textContent = `PostgreSQL (${health?.database_info?.database || 'notes_db'})`;
+      await window.notesAPI.checkHealth();
+      if (dbStatusBadge) {
+        dbStatusBadge.textContent = 'Online';
+      }
+      if (dbNameLabel) {
+        dbNameLabel.textContent = 'Database';
       }
     } catch (e) { /* background silent */ }
   }, 8000);
@@ -1841,18 +1837,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Filter My Notes Toggle
-  filterMyNotesBtn?.addEventListener('click', async () => {
-    const nextFilter = window.notesStore.userFilter === 'mine' ? 'all' : 'mine';
-    window.notesStore.setUserFilter(nextFilter);
-    updateAuthUI();
-    if (userDropdownPopover) userDropdownPopover.style.display = 'none';
-    showToast(nextFilter === 'mine' ? 'Showing only your notes' : 'Showing all notes', 'info');
-    await window.notesStore.refreshAll();
-    renderStats();
-    renderNotes();
-  });
-
   // Switch User button
   switchUserBtn?.addEventListener('click', () => {
     if (userDropdownPopover) userDropdownPopover.style.display = 'none';
@@ -1864,12 +1848,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userDropdownPopover) userDropdownPopover.style.display = 'none';
     await window.notesAPI.logout();
     window.notesStore.setCurrentUser(null);
-    window.notesStore.setUserFilter('all');
     updateAuthUI();
     showToast('Signed out of StudyVault', 'info');
     await window.notesStore.refreshAll();
     renderStats();
     renderNotes();
+  });
+
+  // Delete Account button
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  deleteAccountBtn?.addEventListener('click', async () => {
+    if (userDropdownPopover) userDropdownPopover.style.display = 'none';
+
+    const currentUser = window.notesStore?.currentUser;
+    if (!currentUser) return;
+
+    const confirmMsg = `Are you sure you want to permanently delete your account "${currentUser.username}" and all your associated notes?\n\nThis action cannot be undone.`;
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    try {
+      if (window.notesAPI) {
+        await window.notesAPI.deleteUser(currentUser.id);
+      }
+      if (window.notesStore) {
+        window.notesStore.setCurrentUser(null);
+        window.notesStore.setUserFilter('all');
+      }
+      updateAuthUI();
+      showToast(`Account "${currentUser.username}" was permanently deleted.`, 'info');
+      if (window.notesStore) {
+        await window.notesStore.refreshAll();
+        renderStats();
+        renderNotes();
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to delete account', 'error');
+    }
   });
 
   // Submit Join / Log In Form
@@ -1935,13 +1951,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statBackendStatus) {
     statBackendStatus.classList.add('clickable-stat-card');
     statBackendStatus.addEventListener('click', async () => {
-      showToast('Waking / verifying PostgreSQL database connection…', 'info');
+      showToast('Verifying database connection…', 'info');
       await ensureDatabaseOnlineUI();
       try {
         await window.notesStore.refreshAll();
         renderStats();
         renderNotes();
-        showToast('Database is online & connected!', 'success');
+        showToast('Database is online!', 'success');
       } catch (err) {
         showToast('Database connection check finished.', 'info');
       }

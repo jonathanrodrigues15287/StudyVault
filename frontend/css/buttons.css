@@ -1,0 +1,106 @@
+/* ==========================================================================
+   buttons.css — Button Variants & Icon Buttons
+   ========================================================================== */
+
+.icon-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1.05rem;
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border-color: var(--border-focus);
+  transform: translateY(-1px);
+}
+
+/* Theme toggle icon visibility */
+[data-theme="dark"] .light-icon { display: none; }
+[data-theme="dark"] .dark-icon  { display: inline-block; }
+[data-theme="light"] .dark-icon  { display: none; }
+[data-theme="light"] .light-icon {
+  display: inline-block;
+  color: #f59e0b;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #94a3b8 100%);
+  color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0.65rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(203, 213, 225, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  transition: var(--transition);
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #cbd5e1 100%);
+  box-shadow: 0 6px 20px rgba(203, 213, 225, 0.35);
+  color: #000000;
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+.secondary-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  color: var(--text-primary);
+  padding: 0.6rem 1.15rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(226, 232, 240, 0.35);
+  color: #ffffff;
+}
+
+.danger-btn {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  padding: 0.6rem 1.15rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+}
+
+.danger-btn:hover {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+}

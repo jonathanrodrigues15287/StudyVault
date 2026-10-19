@@ -187,10 +187,13 @@ class NotesAPI {
       const tag = qs.get('tag');
       const is_pinned = qs.get('is_pinned');
       const sort_by = qs.get('sort_by');
-      const user_id = qs.get('user_id');
+      const user_id = qs.get('user_id') || (this.currentUser ? String(this.currentUser.id) : null);
 
+      // STRICT USER ISOLATION:
       if (user_id) {
         notes = notes.filter(n => String(n.user_id) === String(user_id));
+      } else {
+        notes = [];
       }
 
       if (search) {
@@ -325,26 +328,48 @@ class NotesAPI {
     // 7. Stats
     if (cleanEndpoint === '/api/notes/stats') {
       const raw = localStorage.getItem('studyvault_notes');
-      const notes = raw ? JSON.parse(raw) : [];
-      const subs = JSON.parse(localStorage.getItem('studyvault_subjects') || '[]');
+      let notes = raw ? JSON.parse(raw) : [];
+      const qs = endpoint.includes('?') ? new URLSearchParams(endpoint.split('?')[1]) : new URLSearchParams();
+      const user_id = qs.get('user_id') || (this.currentUser ? String(this.currentUser.id) : null);
+      if (user_id) {
+        notes = notes.filter(n => String(n.user_id) === String(user_id));
+      } else {
+        notes = [];
+      }
+      const userSubs = [...new Set(notes.map(n => n.subject).filter(Boolean))];
       return {
         total_notes: notes.length,
-        total_subjects: subs.length,
+        total_subjects: userSubs.length,
         total_pinned: notes.filter(n => n.is_pinned).length,
-        subjects: subs
+        subjects: userSubs
       };
     }
 
     // 8. Subjects
     if (cleanEndpoint === '/api/notes/subjects') {
-      return JSON.parse(localStorage.getItem('studyvault_subjects') || '["General"]');
+      const raw = localStorage.getItem('studyvault_notes');
+      let notes = raw ? JSON.parse(raw) : [];
+      const user_id = this.currentUser ? String(this.currentUser.id) : null;
+      if (user_id) {
+        notes = notes.filter(n => String(n.user_id) === String(user_id));
+      } else {
+        notes = [];
+      }
+      const userSubs = [...new Set(notes.map(n => n.subject).filter(Boolean))];
+      return userSubs.length > 0 ? userSubs : ['General'];
     }
 
     if (cleanEndpoint === '/api/notes/subjects/details') {
       const raw = localStorage.getItem('studyvault_notes');
-      const notes = raw ? JSON.parse(raw) : [];
-      const subs = JSON.parse(localStorage.getItem('studyvault_subjects') || '["General"]');
-      return subs.map(s => ({
+      let notes = raw ? JSON.parse(raw) : [];
+      const user_id = this.currentUser ? String(this.currentUser.id) : null;
+      if (user_id) {
+        notes = notes.filter(n => String(n.user_id) === String(user_id));
+      } else {
+        notes = [];
+      }
+      const userSubs = [...new Set(notes.map(n => n.subject).filter(Boolean))];
+      return userSubs.map(s => ({
         name: s,
         color: 'blue',
         note_count: notes.filter(n => n.subject === s).length
@@ -410,6 +435,30 @@ class NotesAPI {
     // 12. Auth Logout
     if (cleanEndpoint === '/api/auth/logout') {
       return { message: 'Logged out successfully' };
+    }
+
+    // 13. Auth Delete User Account
+    if ((cleanEndpoint === '/api/auth/me' || cleanEndpoint.startsWith('/api/auth/users/')) && method === 'DELETE') {
+      let targetId = this.currentUser?.id;
+      if (cleanEndpoint.startsWith('/api/auth/users/')) {
+        const parts = cleanEndpoint.split('/');
+        targetId = parseInt(parts[parts.length - 1], 10);
+      }
+
+      if (targetId) {
+        let users = JSON.parse(localStorage.getItem('studyvault_users') || '[]');
+        users = users.filter(u => u.id !== targetId);
+        localStorage.setItem('studyvault_users', JSON.stringify(users));
+
+        let notes = JSON.parse(localStorage.getItem('studyvault_notes') || '[]');
+        notes = notes.filter(n => n.user_id !== targetId);
+        localStorage.setItem('studyvault_notes', JSON.stringify(notes));
+
+        if (this.currentUser && this.currentUser.id === targetId) {
+          this.saveUserToStorage(null);
+        }
+      }
+      return { message: 'User account and associated notes deleted successfully' };
     }
 
     return {};
@@ -481,6 +530,16 @@ class NotesAPI {
     this.saveUserToStorage(null);
   }
 
+  // Delete user account permanently
+  async deleteUser(userId = null) {
+    const endpoint = userId ? `/api/auth/users/${userId}` : '/api/auth/me';
+    const res = await this.request(endpoint, { method: 'DELETE' });
+    if (!userId || (this.currentUser && this.currentUser.id === userId)) {
+      this.saveUserToStorage(null);
+    }
+    return res;
+  }
+
   // ==========================================
   // Notes Operations
   // ==========================================
@@ -493,7 +552,8 @@ class NotesAPI {
     if (params.tag) query.append('tag', params.tag);
     if (params.is_pinned !== undefined && params.is_pinned !== null) query.append('is_pinned', params.is_pinned);
     if (params.sort_by) query.append('sort_by', params.sort_by);
-    if (params.user_id) query.append('user_id', params.user_id);
+    const uid = params.user_id || (this.currentUser ? this.currentUser.id : null);
+    if (uid) query.append('user_id', uid);
 
     const qs = query.toString();
     const endpoint = `/api/notes${qs ? `?${qs}` : ''}`;
@@ -541,18 +601,23 @@ class NotesAPI {
 
   // Get notes statistics
   async getStats(userId = null) {
-    const qs = userId ? `?user_id=${userId}` : '';
+    const uid = userId || (this.currentUser ? this.currentUser.id : null);
+    const qs = uid ? `?user_id=${uid}` : '';
     return this.request(`/api/notes/stats${qs}`);
   }
 
   // Get subjects list (string names only)
-  async getSubjects() {
-    return this.request('/api/notes/subjects');
+  async getSubjects(userId = null) {
+    const uid = userId || (this.currentUser ? this.currentUser.id : null);
+    const qs = uid ? `?user_id=${uid}` : '';
+    return this.request(`/api/notes/subjects${qs}`);
   }
 
   // Get subjects with details (name, color, note_count)
-  async getSubjectDetails() {
-    return this.request('/api/notes/subjects/details');
+  async getSubjectDetails(userId = null) {
+    const uid = userId || (this.currentUser ? this.currentUser.id : null);
+    const qs = uid ? `?user_id=${uid}` : '';
+    return this.request(`/api/notes/subjects/details${qs}`);
   }
 
   // Create a new custom subject
