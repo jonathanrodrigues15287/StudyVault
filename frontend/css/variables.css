@@ -1,0 +1,84 @@
+/* ==========================================================================
+   variables.css — Design Tokens & Theme Variables
+   ========================================================================== */
+
+:root {
+  /* Dark Mode Silver & Metallic Palette */
+  --bg-main: #0b0f19;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1a2234;
+  --bg-glass: rgba(17, 24, 39, 0.8);
+  --bg-input: #151d2c;
+  --border-color: rgba(226, 232, 240, 0.12);
+  --border-focus: rgba(203, 213, 225, 0.5);
+  
+  /* Silverish Text Color Scheme */
+  --text-primary: #f1f5f9;      /* Lustrous Platinum Silver */
+  --text-secondary: #cbd5e1;    /* Polished Silver Slate */
+  --text-muted: #94a3b8;        /* Brushed Steel / Pewter */
+  --text-dim: #64748b;          /* Dark Titanium Silver */
+
+  /* Metallic Accents (Non-Pastel, Sleek & Muted) */
+  --primary: #cbd5e1;           /* Sterling Silver Accent */
+  --primary-hover: #ffffff;
+  --primary-dark: #94a3b8;
+  --primary-glow: rgba(203, 213, 225, 0.22);
+  
+  --color-blue: #94a3b8;        /* Cool Steel Silver */
+  --color-blue-bg: rgba(148, 163, 184, 0.12);
+  --color-purple: #a1a1aa;      /* Titanium Slate */
+  --color-purple-bg: rgba(161, 161, 170, 0.12);
+  --color-emerald: #8da399;     /* Mineral Sage Platinum */
+  --color-emerald-bg: rgba(141, 163, 153, 0.12);
+  --color-amber: #b8a88a;       /* Champagne Platinum */
+  --color-amber-bg: rgba(184, 168, 138, 0.12);
+  --color-rose: #a3888d;        /* Smoked Chrome */
+  --color-rose-bg: rgba(163, 136, 141, 0.12);
+  --color-default: #cbd5e1;     /* Pure Sterling Silver */
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+
+  /* Shadows & Radius */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 35px -8px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px rgba(203, 213, 225, 0.22);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-main: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #e2e8f0;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-input: #e2e8f0;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(100, 116, 139, 0.5);
+
+  --text-primary: #1e293b;      /* Deep Gunmetal Silver */
+  --text-secondary: #475569;    /* Brushed Steel */
+  --text-muted: #64748b;        /* Cool Pewter */
+  --text-dim: #94a3b8;
+
+  --primary: #334155;
+  --primary-hover: #0f172a;
+  --primary-dark: #64748b;
+  --primary-glow: rgba(51, 65, 85, 0.15);
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 35px -8px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px rgba(100, 116, 139, 0.15);
+}

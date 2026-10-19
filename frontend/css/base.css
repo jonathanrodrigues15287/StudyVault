@@ -1,0 +1,48 @@
+/* ==========================================================================
+   base.css — Reset, Body & Ambient Background
+   ========================================================================== */
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ambient Background Light Elements */
+.bg-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.12;
+}
+
+.bg-glow-1 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(203, 213, 225, 0.16) 0%, transparent 70%);
+  top: -150px;
+  right: -100px;
+}
+
+.bg-glow-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(148, 163, 184, 0.14) 0%, transparent 70%);
+  bottom: 50px;
+  left: -150px;
+}

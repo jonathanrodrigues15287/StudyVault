@@ -1,0 +1,243 @@
+/* ==========================================================================
+   ocr.css — OCR Scanner Modal & Components
+   ========================================================================== */
+
+.ocr-scan-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid rgba(203, 213, 225, 0.18);
+  color: var(--text-primary);
+}
+
+.ocr-scan-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(203, 213, 225, 0.35);
+  color: #ffffff;
+}
+
+.content-label-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mini-scan-btn {
+  background: rgba(203, 213, 225, 0.1);
+  border: 1px solid rgba(203, 213, 225, 0.2);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition);
+}
+
+.mini-scan-btn:hover {
+  background: rgba(203, 213, 225, 0.18);
+  border-color: rgba(203, 213, 225, 0.4);
+  color: var(--text-primary);
+}
+
+.modal-card-ocr { max-width: 660px; }
+
+.ocr-modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* OCR Dropzone */
+.ocr-dropzone {
+  border: 2px dashed rgba(203, 213, 225, 0.25);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ocr-dropzone:hover,
+.ocr-dropzone.dragover {
+  border-color: rgba(203, 213, 225, 0.6);
+  background: rgba(203, 213, 225, 0.06);
+  box-shadow: 0 0 20px rgba(203, 213, 225, 0.15);
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.dropzone-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(203, 213, 225, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(203, 213, 225, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.ocr-dropzone:hover .dropzone-icon {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.dropzone-content h4 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dropzone-content p {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.browse-link-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.paste-hint-pill {
+  margin-top: 0.5rem;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.paste-hint-pill kbd {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-primary);
+}
+
+/* Image Preview & Laser Scan Animation */
+.ocr-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  max-height: 240px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+}
+
+.image-preview-wrapper img {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.scanner-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+  box-shadow: 0 0 14px 3px rgba(226, 232, 240, 0.9);
+  animation: laserScan 1.6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes laserScan {
+  0%   { top: 2%;  opacity: 0.8; }
+  100% { top: 96%; opacity: 1; }
+}
+
+/* Progress Bar */
+.ocr-progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ocr-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ocr-status-row span i {
+  margin-right: 0.35rem;
+  color: var(--text-primary);
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #94a3b8 0%, #e2e8f0 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.25s ease;
+  box-shadow: 0 0 10px rgba(203, 213, 225, 0.4);
+}
+
+/* Results Container */
+.ocr-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ocr-success-badge {
+  background: rgba(141, 163, 153, 0.15);
+  border: 1px solid rgba(141, 163, 153, 0.3);
+  color: var(--text-primary);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
