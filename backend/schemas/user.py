@@ -5,12 +5,12 @@ from pydantic import BaseModel, Field
 
 class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, description="Unique username (3-50 characters)")
-    password: str = Field(..., min_length=4, max_length=128, description="Password (at least 4 characters)")
+    password: str = Field(..., min_length=8, max_length=16, description="Password (8-16 characters)")
 
 
 class UserLogin(BaseModel):
     username: str = Field(..., min_length=1, max_length=50, description="Username")
-    password: str = Field(..., min_length=1, max_length=128, description="Password")
+    password: str = Field(..., min_length=8, max_length=16, description="Password (8-16 characters)")
 
 
 class UserResponse(BaseModel):

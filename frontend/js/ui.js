@@ -1761,7 +1761,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (authModalSubtitle) authModalSubtitle.textContent = 'Create your student workspace or sign in';
       if (authSubmitBtnText) authSubmitBtnText.textContent = 'Create Account & Join';
       if (authUsernameHint) authUsernameHint.style.display = 'block';
-      if (authPasswordHint) authPasswordHint.textContent = 'Minimum 4 characters';
+      if (authPasswordHint) authPasswordHint.textContent = '8–16 characters required';
     } else {
       authTabLogin?.classList.add('active');
       authTabJoin?.classList.remove('active');
@@ -1769,7 +1769,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (authModalSubtitle) authModalSubtitle.textContent = 'Welcome back! Sign in to access your notes';
       if (authSubmitBtnText) authSubmitBtnText.textContent = 'Log In';
       if (authUsernameHint) authUsernameHint.style.display = 'none';
-      if (authPasswordHint) authPasswordHint.textContent = 'Enter your password';
+      if (authPasswordHint) authPasswordHint.textContent = '8–16 characters required';
     }
     if (authAlertBox) authAlertBox.style.display = 'none';
   }
@@ -1882,6 +1882,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!username || !password) {
       if (authAlertBox) {
         authAlertBox.textContent = 'Please fill in both username and password';
+        authAlertBox.className = 'auth-alert-box alert-error';
+        authAlertBox.style.display = 'block';
+      }
+      return;
+    }
+
+    if (password.length < 8 || password.length > 16) {
+      if (authAlertBox) {
+        authAlertBox.textContent = 'Password must be between 8 and 16 characters.';
         authAlertBox.className = 'auth-alert-box alert-error';
         authAlertBox.style.display = 'block';
       }

@@ -708,14 +708,15 @@
                 class="auth-input"
                 placeholder="Enter your password..."
                 required
-                minlength="4"
+                minlength="8"
+                maxlength="16"
                 autocomplete="current-password"
               />
               <button type="button" class="toggle-pwd-btn" id="toggleAuthPwdBtn" title="Toggle password visibility" aria-label="Toggle password visibility">
                 <i class="fa-solid fa-eye" id="toggleAuthPwdIcon"></i>
               </button>
             </div>
-            <span class="auth-field-hint" id="authPasswordHint">Minimum 4 characters</span>
+            <span class="auth-field-hint" id="authPasswordHint">8–16 characters</span>
           </div>
 
           <!-- Error / Info Alert -->
