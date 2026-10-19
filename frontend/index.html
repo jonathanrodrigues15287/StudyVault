@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student Notes Manager - A clean, fast, and modern notes manager built for students with subject categorization, tags, search, and robust PostgreSQL database storage.">
+  <title>Student Notes Manager | Smart Study & Revision Hub</title>
+  
+  <!-- Modern Typography (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons for clean UI symbols -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <!-- Ambient background glow effects -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Header Navigation -->
+  <header class="app-header" id="appHeader">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-logo">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Study<span>Vault</span></h1>
+          <span class="brand-subtitle">Student Notes Manager</span>
+        </div>
+      </div>
+
+      <div class="search-container">
+        <div class="search-input-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" placeholder="Search notes, subjects, #tags..." autocomplete="off" />
+          <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear search" style="display: none;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-btn theme-toggle" title="Toggle Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon dark-icon"></i>
+          <i class="fa-solid fa-sun light-icon"></i>
+        </button>
+
+        <button id="openOcrModalBtn" class="secondary-btn ocr-scan-btn" title="Scan Note from Image (OCR)">
+          <i class="fa-solid fa-camera"></i>
+          <span>Scan (OCR)</span>
+        </button>
+
+        <button id="openVoiceModalBtn" class="secondary-btn voice-note-btn" title="Record Voice Note (Speech to Text)">
+          <i class="fa-solid fa-microphone"></i>
+          <span>Voice Note</span>
+        </button>
+
+        <button id="openCreateModalBtn" class="primary-btn new-note-btn">
+          <i class="fa-solid fa-plus"></i>
+          <span>New Note</span>
+        </button>
+
+        <button id="openSubjectsModalBtn" class="secondary-btn subjects-manage-btn" title="Manage your subjects">
+          <i class="fa-solid fa-shapes"></i>
+          <span>Subjects</span>
+        </button>
+
+        <!-- User Authentication & Profile -->
+        <button id="openAuthModalBtn" class="primary-btn auth-nav-btn" title="Sign In or Create Account">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Join / Log In</span>
+        </button>
+
+        <div class="user-profile-menu" id="userProfileMenu" style="display: none;">
+          <button class="user-chip-btn" id="userChipBtn" title="Account & Notes Filter" aria-haspopup="true" aria-expanded="false">
+            <span class="user-avatar-badge" id="userAvatarBadge">U</span>
+            <span class="user-name-label" id="headerUsername">User</span>
+            <i class="fa-solid fa-chevron-down user-chevron"></i>
+          </button>
+
+          <div class="user-dropdown-popover" id="userDropdownPopover" style="display: none;">
+            <div class="dropdown-header-user">
+              <span class="signed-in-tag">Signed in as</span>
+              <strong id="dropdownUsername" class="user-full-name">username</strong>
+            </div>
+            <div class="dropdown-separator"></div>
+            <button class="dropdown-item" id="filterMyNotesBtn">
+              <i class="fa-solid fa-filter"></i>
+              <span id="filterMyNotesLabel">Show Only My Notes</span>
+            </button>
+            <button class="dropdown-item" id="switchUserBtn">
+              <i class="fa-solid fa-users"></i>
+              <span>Switch User</span>
+            </button>
+            <div class="dropdown-separator"></div>
+            <button class="dropdown-item logout-item" id="logoutBtn">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <span>Log Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <!-- Stats Overview Bar -->
+      <section class="stats-section" id="statsSection">
+        <div class="stat-card" id="statTotalNotes">
+          <div class="stat-icon-badge color-blue">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div class="stat-meta">
+            <span class="stat-value" id="statsTotalCount">0</span>
+            <span class="stat-label">Total Notes</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="statTotalSubjects">
+          <div class="stat-icon-badge color-purple">
+            <i class="fa-solid fa-shapes"></i>
+          </div>
+          <div class="stat-meta">
+            <span class="stat-value" id="statsSubjectCount">0</span>
+            <span class="stat-label">Subjects</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="statPinnedNotes">
+          <div class="stat-icon-badge color-amber">
+            <i class="fa-solid fa-thumbtack"></i>
+          </div>
+          <div class="stat-meta">
+            <span class="stat-value" id="statsPinnedCount">0</span>
+            <span class="stat-label">Pinned Priority</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="statBackendStatus">
+          <div class="stat-icon-badge color-emerald">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div class="stat-meta">
+            <span class="stat-value badge-db" id="dbStatusBadge">Connected</span>
+            <span class="stat-label" id="dbNameLabel">Database</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Controls & Filter Toolbar -->
+      <section class="toolbar-section">
+        <!-- Subject Pill Filter -->
+        <div class="subject-filter-wrapper">
+          <label class="filter-label"><i class="fa-solid fa-filter"></i> Subject:</label>
+          <div class="subject-pills-scroll" id="subjectPillsContainer">
+            <button class="pill-btn active" data-subject="all">All Notes</button>
+            <!-- Dynamic subject pills injected here -->
+          </div>
+        </div>
+
+        <div class="view-and-sort-controls">
+          <!-- Sort Dropdown -->
+          <div class="select-dropdown-wrapper">
+            <i class="fa-solid fa-arrow-down-short-wide select-icon"></i>
+            <select id="sortSelect" class="custom-select" aria-label="Sort notes">
+              <option value="newest">Recently Updated</option>
+              <option value="oldest">Oldest First</option>
+              <option value="title_asc">Title (A &rarr; Z)</option>
+              <option value="title_desc">Title (Z &rarr; A)</option>
+              <option value="pinned">Pinned Priority</option>
+            </select>
+          </div>
+
+          <!-- View Layout Toggle -->
+          <div class="view-toggle-group">
+            <button id="viewGridBtn" class="view-btn active" title="Grid View" aria-label="Grid View">
+              <i class="fa-solid fa-grip"></i>
+            </button>
+            <button id="viewListBtn" class="view-btn" title="List View" aria-label="List View">
+              <i class="fa-solid fa-list-ul"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Filter Chips bar (shown when search or tag active) -->
+      <div class="active-filter-bar" id="activeFilterBar" style="display: none;">
+        <span class="active-filter-label">Active Filters:</span>
+        <div class="chips-list" id="activeChipsList"></div>
+        <button id="clearAllFiltersBtn" class="clear-all-link">Clear All</button>
+      </div>
+
+      <!-- Notes Grid / List Container -->
+      <section class="notes-display-section">
+        <div class="notes-container grid-layout" id="notesContainer">
+          <!-- Notes cards rendered dynamically via JS -->
+        </div>
+
+        <!-- Empty State Illustration & Call to Action -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-illustration">
+            <div class="empty-circle">
+              <i class="fa-solid fa-feather-pointed"></i>
+            </div>
+          </div>
+          <h2 class="empty-title">No study notes found</h2>
+          <p class="empty-subtitle">Start organizing your lectures, formulas, code snippets, and exam summaries!</p>
+          <button id="emptyCreateBtn" class="primary-btn">
+            <i class="fa-solid fa-plus"></i> Create Your First Note
+          </button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-state" id="loadingState">
+          <div class="spinner"></div>
+          <span>Loading your notes...</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Note Create / Edit Modal Dialog -->
+  <div class="modal-overlay" id="noteEditorModal" aria-hidden="true">
+    <div class="modal-card modal-card-editor" role="dialog" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-icon"><i class="fa-solid fa-pen-nib"></i></span>
+          <h3 id="modalTitle">Create New Note</h3>
+        </div>
+        <button class="modal-close-btn" id="closeEditorModalBtn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="noteForm" class="modal-form" novalidate>
+        <input type="hidden" id="editNoteId" value="" />
+
+        <!-- Title -->
+        <div class="form-group">
+          <label for="noteTitleInput">Note Title <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="noteTitleInput" 
+            placeholder="e.g. Normalization & Decomposition (1NF to BCNF)" 
+            required 
+            maxlength="200" 
+          />
+        </div>
+
+        <!-- Subject & Color Grid Row -->
+        <div class="form-row">
+          <div class="form-group form-col">
+            <label for="noteSubjectInput">Subject / Course <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="noteSubjectInput" 
+              placeholder="e.g. Database Systems, OS, Algo" 
+              list="suggestedSubjects"
+              required 
+            />
+            <datalist id="suggestedSubjects">
+              <option value="Database Management Systems">
+              <option value="Data Structures & Algorithms">
+              <option value="Operating Systems">
+              <option value="Computer Networks">
+              <option value="Software Engineering">
+              <option value="Mathematics">
+              <option value="Machine Learning">
+            </datalist>
+          </div>
+
+          <div class="form-group form-col">
+            <label>Color Accent</label>
+            <div class="color-palette-picker" id="colorPickerGroup">
+              <button type="button" class="color-dot color-default active" data-color="default" title="Sterling Silver"></button>
+              <button type="button" class="color-dot color-blue" data-color="blue" title="Cool Steel"></button>
+              <button type="button" class="color-dot color-purple" data-color="purple" title="Titanium Slate"></button>
+              <button type="button" class="color-dot color-emerald" data-color="emerald" title="Mineral Platinum"></button>
+              <button type="button" class="color-dot color-amber" data-color="amber" title="Champagne Silver"></button>
+              <button type="button" class="color-dot color-rose" data-color="rose" title="Smoked Chrome"></button>
+            </div>
+            <input type="hidden" id="noteColorInput" value="default" />
+          </div>
+        </div>
+
+        <!-- Tags Input -->
+        <div class="form-group">
+          <label for="noteTagsInput">Tags <span class="form-hint">(comma separated, e.g. exam, unit-2, sql, viva)</span></label>
+          <input 
+            type="text" 
+            id="noteTagsInput" 
+            placeholder="e.g. exam, unit-2, sql, viva" 
+          />
+        </div>
+
+        <!-- Content Body -->
+        <div class="form-group">
+          <div class="content-label-row">
+            <div class="content-label-group">
+              <label for="noteContentInput">Content & Notes <span class="required">*</span></label>
+              <button type="button" class="mini-scan-btn" id="editorOcrScanBtn" title="Extract text from photo, slide, or screenshot (OCR)">
+                <i class="fa-solid fa-camera"></i> Scan / Paste Image
+              </button>
+              <button type="button" class="mini-voice-btn" id="editorVoiceDictateBtn" title="Dictate note content with microphone">
+                <i class="fa-solid fa-microphone"></i> Dictate Voice
+              </button>
+            </div>
+            <span class="char-count" id="editorCharCount">0 characters</span>
+          </div>
+          <textarea 
+            id="noteContentInput" 
+            rows="8" 
+            placeholder="Type your notes, definitions, formulas, or lecture key points here..." 
+            required
+          ></textarea>
+        </div>
+
+        <!-- Pin to Top Checkbox -->
+        <div class="form-check-group">
+          <label class="custom-checkbox">
+            <input type="checkbox" id="notePinCheckbox" />
+            <span class="checkbox-indicator"></span>
+            <span class="checkbox-label"><i class="fa-solid fa-thumbtack"></i> Pin this note to the top for quick access</span>
+          </label>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" id="cancelEditorModalBtn">Cancel</button>
+          <button type="submit" class="primary-btn" id="saveNoteBtn">
+            <i class="fa-solid fa-check"></i>
+            <span id="saveBtnText">Save Note</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Note Preview / Read Modal -->
+  <div class="modal-overlay" id="notePreviewModal" aria-hidden="true">
+    <div class="modal-card modal-card-preview" role="dialog" aria-labelledby="previewTitle">
+      <div class="modal-header">
+        <div class="preview-meta-badge">
+          <span class="subject-badge" id="previewSubject">Subject</span>
+          <span class="timestamp-badge" id="previewDate"><i class="fa-regular fa-clock"></i> Date</span>
+        </div>
+        <button class="modal-close-btn" id="closePreviewModalBtn" aria-label="Close preview">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="preview-body">
+        <div class="preview-title-row">
+          <h2 id="previewTitle" class="preview-title">Note Title</h2>
+          <span id="previewPinnedBadge" class="pin-indicator" style="display: none;">
+            <i class="fa-solid fa-thumbtack"></i> Pinned
+          </span>
+        </div>
+
+        <div class="preview-tags" id="previewTagsList"></div>
+
+        <div class="preview-content-box" id="previewContent"></div>
+      </div>
+
+      <div class="modal-footer preview-footer">
+        <div class="preview-stats">
+          <span id="previewWordCount"><i class="fa-solid fa-font"></i> 0 words</span>
+          <span id="previewReadTime"><i class="fa-solid fa-stopwatch"></i> 1 min read</span>
+        </div>
+        <div class="preview-action-btns">
+          <button class="secondary-btn copy-btn" id="copyNoteContentBtn">
+            <i class="fa-regular fa-copy"></i> Copy Note
+          </button>
+          <button class="secondary-btn edit-btn" id="previewEditBtn">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+          <button class="danger-btn delete-btn" id="previewDeleteBtn">
+            <i class="fa-regular fa-trash-can"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OCR Scanner Modal -->
+  <div class="modal-overlay" id="ocrScannerModal" aria-hidden="true">
+    <div class="modal-card modal-card-ocr" role="dialog" aria-labelledby="ocrModalTitle">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-icon color-blue"><i class="fa-solid fa-camera"></i></span>
+          <h3 id="ocrModalTitle">Smart OCR Note Scanner</h3>
+        </div>
+        <button class="modal-close-btn" id="closeOcrModalBtn" aria-label="Close OCR modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="ocr-modal-body">
+        <!-- Dropzone / Input Area -->
+        <div class="ocr-dropzone" id="ocrDropzone">
+          <input type="file" id="ocrFileInput" accept="image/*" style="display: none;" />
+          <div class="dropzone-content">
+            <div class="dropzone-icon">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h4>Upload or Drop Lecture Slide, Textbook, or Notes</h4>
+            <p>Drag an image here, or <button type="button" class="browse-link-btn" id="browseFileBtn">browse device</button></p>
+            <div class="paste-hint-pill">
+              <i class="fa-regular fa-clipboard"></i> Or press <kbd>Ctrl</kbd> + <kbd>V</kbd> anywhere to paste screenshot
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Preview & Scanning Status -->
+        <div class="ocr-preview-container" id="ocrPreviewContainer" style="display: none;">
+          <div class="image-preview-wrapper">
+            <img id="ocrPreviewImg" src="" alt="OCR scan target" />
+            <div class="scanner-laser" id="scannerLaser"></div>
+          </div>
+          
+          <div class="ocr-progress-box" id="ocrProgressBox">
+            <div class="ocr-status-row">
+              <span id="ocrStatusText"><i class="fa-solid fa-spinner fa-spin"></i> Initializing OCR engine...</span>
+              <span id="ocrPercentText">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="ocrProgressBar" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR Extracted Results Preview -->
+        <div class="ocr-results-container" id="ocrResultsContainer" style="display: none;">
+          <div class="ocr-success-badge">
+            <i class="fa-solid fa-check-circle"></i> Text extracted successfully! Review and create your note below:
+          </div>
+
+          <div class="form-group">
+            <label for="ocrDetectedTitle">Detected Title</label>
+            <input type="text" id="ocrDetectedTitle" placeholder="Note Title" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label for="ocrDetectedSubject">Subject / Course</label>
+              <input type="text" id="ocrDetectedSubject" placeholder="e.g. Database Systems" list="suggestedSubjects" />
+            </div>
+            <div class="form-group form-col">
+              <label for="ocrDetectedTags">Tags</label>
+              <input type="text" id="ocrDetectedTags" value="ocr, lecture, notes" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="content-label-row">
+              <label for="ocrExtractedText">Extracted Note Content</label>
+              <span class="char-count" id="ocrCharCount">0 chars</span>
+            </div>
+            <textarea id="ocrExtractedText" rows="6" placeholder="Extracted text..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" id="cancelOcrModalBtn">Cancel</button>
+        <button type="button" class="secondary-btn" id="rescanOcrBtn" style="display: none;">
+          <i class="fa-solid fa-arrow-rotate-right"></i> Scan Another
+        </button>
+        <button type="button" class="secondary-btn" id="editOcrInFormBtn" style="display: none;">
+          <i class="fa-solid fa-pen-to-square"></i> Edit in Form
+        </button>
+        <button type="button" class="primary-btn" id="createFromOcrBtn" style="display: none;">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Save Scanned Note
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Note Studio Modal -->
+  <div class="modal-overlay" id="voiceNoteModal" aria-hidden="true">
+    <div class="modal-card modal-card-voice" role="dialog" aria-labelledby="voiceModalTitle">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-icon color-rose"><i class="fa-solid fa-microphone"></i></span>
+          <h3 id="voiceModalTitle">Voice Note Studio</h3>
+        </div>
+        <button class="modal-close-btn" id="closeVoiceModalBtn" aria-label="Close Voice modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="voice-modal-body">
+        <!-- Visualizer & Microphone Centerpiece -->
+        <div class="voice-recorder-hub">
+          <div class="voice-pulse-ring" id="voicePulseRing"></div>
+          <button type="button" class="voice-mic-main-btn" id="voiceToggleRecBtn" title="Start / Stop Recording">
+            <i class="fa-solid fa-microphone" id="voiceMicIcon"></i>
+          </button>
+          
+          <div class="voice-timer-badge" id="voiceTimerBadge">00:00</div>
+          
+          <!-- Explicit Stop Button to stop computer's audio immediately -->
+          <button type="button" class="voice-stop-pill-btn" id="voiceStopBtn" style="display: none;" title="Stop using computer audio">
+            <i class="fa-solid fa-square"></i> Stop Audio
+          </button>
+
+          <p class="voice-status-label" id="voiceStatusLabel">Click the microphone to start speaking</p>
+          
+          <!-- Animated sound waves -->
+          <div class="sound-wave-bars" id="soundWaveBars" style="display: none;">
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+          </div>
+        </div>
+
+        <!-- LIVE TRANSCRIPT DISPLAY (shows interim speech in real-time) -->
+        <div class="live-transcript-display" id="liveTranscriptDisplay" style="display: none;">
+          <div class="live-transcript-header">
+            <span class="live-dot-indicator" id="liveDotIndicator"></span>
+            <span class="live-label">Listening…</span>
+            <span class="live-word-counter" id="liveWordCounter">0 words</span>
+          </div>
+          <div class="live-transcript-content" id="liveTranscriptContent">
+            <span class="final-text" id="liveTranscriptFinal"></span><span class="interim-text" id="liveTranscriptInterim"></span><span class="live-cursor" id="liveCursor"></span>
+          </div>
+        </div>
+
+        <!-- Real-time Live Transcript & Fields -->
+        <div class="voice-results-box" id="voiceResultsBox">
+          <div class="form-group">
+            <label for="voiceDetectedTitle">Detected Title</label>
+            <input type="text" id="voiceDetectedTitle" placeholder="Voice Note Title" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label for="voiceDetectedSubject">Subject / Course</label>
+              <input type="text" id="voiceDetectedSubject" placeholder="e.g. Operating Systems" list="suggestedSubjects" />
+            </div>
+            <div class="form-group form-col">
+              <label for="voiceDetectedTags">Tags</label>
+              <input type="text" id="voiceDetectedTags" value="voice, dictation, lecture" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="content-label-row">
+              <label for="voiceTranscriptText">Full Transcript</label>
+              <span class="char-count" id="voiceCharCount">0 words</span>
+            </div>
+            <textarea id="voiceTranscriptText" rows="5" placeholder="Your spoken words will appear here..."></textarea>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" id="cancelVoiceModalBtn">Cancel</button>
+        <button type="button" class="secondary-btn" id="clearVoiceTranscriptBtn">
+          <i class="fa-solid fa-trash-can"></i> Clear
+        </button>
+        <button type="button" class="secondary-btn" id="editVoiceInFormBtn" style="display: none;">
+          <i class="fa-solid fa-pen-to-square"></i> Edit in Form
+        </button>
+        <button type="button" class="primary-btn" id="createFromVoiceBtn" disabled>
+          <i class="fa-solid fa-cloud-arrow-up"></i> Save Voice Note
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Subjects Manager Modal -->
+  <div class="modal-overlay" id="subjectsManagerModal" aria-hidden="true">
+    <div class="modal-card modal-card-subjects" role="dialog" aria-labelledby="subjectsModalTitle">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-icon color-purple"><i class="fa-solid fa-shapes"></i></span>
+          <h3 id="subjectsModalTitle">Manage Subjects</h3>
+        </div>
+        <button class="modal-close-btn" id="closeSubjectsModalBtn" aria-label="Close subjects modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="subjects-modal-body">
+        <!-- Add New Subject Form -->
+        <div class="add-subject-form">
+          <h4 class="section-label"><i class="fa-solid fa-circle-plus"></i> Add New Subject</h4>
+          <div class="subject-add-row">
+            <input
+              type="text"
+              id="newSubjectNameInput"
+              placeholder="e.g. Database Management Systems"
+              maxlength="100"
+              class="subject-name-input"
+            />
+            <div class="subject-color-picker" id="subjectColorPicker">
+              <button type="button" class="color-dot color-blue active" data-color="blue" title="Cool Steel"></button>
+              <button type="button" class="color-dot color-purple" data-color="purple" title="Titanium Slate"></button>
+              <button type="button" class="color-dot color-emerald" data-color="emerald" title="Mineral Platinum"></button>
+              <button type="button" class="color-dot color-amber" data-color="amber" title="Champagne Silver"></button>
+              <button type="button" class="color-dot color-rose" data-color="rose" title="Smoked Chrome"></button>
+            </div>
+            <input type="hidden" id="newSubjectColorInput" value="blue" />
+            <button type="button" class="primary-btn" id="addSubjectBtn">
+              <i class="fa-solid fa-plus"></i> Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Subjects List -->
+        <div class="subjects-list-section">
+          <h4 class="section-label"><i class="fa-solid fa-list"></i> Your Subjects <span class="subjects-count-badge" id="subjectsCountBadge">0</span></h4>
+          <div class="subjects-list" id="subjectsList">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="subjects-empty-state" id="subjectsEmptyState" style="display: none;">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>No subjects yet. Add one above to get started!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" id="closeSubjectsFooterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Authentication Modal (Join / Log In) -->
+  <div class="modal-overlay" id="authModal" aria-hidden="true">
+    <div class="modal-card modal-card-auth" role="dialog" aria-labelledby="authModalTitle">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-icon color-blue"><i class="fa-solid fa-user-shield"></i></span>
+          <div>
+            <h3 id="authModalTitle">Join StudyVault</h3>
+            <p class="auth-modal-subtitle" id="authModalSubtitle">Create your student workspace or sign in</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="closeAuthModalBtn" aria-label="Close authentication modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="auth-modal-body">
+        <!-- Auth Mode Tabs -->
+        <div class="auth-tab-group" role="tablist">
+          <button type="button" class="auth-tab-btn active" id="authTabJoin" role="tab" aria-selected="true" data-mode="join">
+            <i class="fa-solid fa-user-plus"></i> Join (Sign Up)
+          </button>
+          <button type="button" class="auth-tab-btn" id="authTabLogin" role="tab" aria-selected="false" data-mode="login">
+            <i class="fa-solid fa-right-to-bracket"></i> Log In
+          </button>
+        </div>
+
+        <!-- Auth Form -->
+        <form id="authForm" class="auth-form" autocomplete="on">
+          <input type="hidden" id="authModeInput" value="join" />
+
+          <!-- Username Input -->
+          <div class="form-group auth-group">
+            <label for="authUsernameInput">Username</label>
+            <div class="auth-field-box">
+              <i class="fa-solid fa-user auth-field-icon"></i>
+              <input
+                type="text"
+                id="authUsernameInput"
+                class="auth-input"
+                placeholder="e.g. alex_study"
+                required
+                minlength="3"
+                maxlength="30"
+                autocomplete="username"
+              />
+            </div>
+            <span class="auth-field-hint" id="authUsernameHint">Letters, numbers, and underscores (3-30 chars)</span>
+          </div>
+
+          <!-- Password Input -->
+          <div class="form-group auth-group">
+            <label for="authPasswordInput">Password</label>
+            <div class="auth-field-box">
+              <i class="fa-solid fa-lock auth-field-icon"></i>
+              <input
+                type="password"
+                id="authPasswordInput"
+                class="auth-input"
+                placeholder="Enter your password..."
+                required
+                minlength="4"
+                autocomplete="current-password"
+              />
+              <button type="button" class="toggle-pwd-btn" id="toggleAuthPwdBtn" title="Toggle password visibility" aria-label="Toggle password visibility">
+                <i class="fa-solid fa-eye" id="toggleAuthPwdIcon"></i>
+              </button>
+            </div>
+            <span class="auth-field-hint" id="authPasswordHint">Minimum 4 characters</span>
+          </div>
+
+          <!-- Error / Info Alert -->
+          <div class="auth-alert-box" id="authAlertBox" style="display: none;"></div>
+
+          <button type="submit" class="primary-btn auth-submit-btn" id="authSubmitBtn">
+            <i class="fa-solid fa-sparkles"></i>
+            <span id="authSubmitBtnText">Create Account &amp; Join</span>
+          </button>
+        </form>
+
+        <!-- Quick Switch for Existing Accounts -->
+        <div class="auth-switch-section" id="authSwitchSection">
+          <div class="auth-switch-header">
+            <span class="auth-switch-label"><i class="fa-solid fa-users"></i> Existing Users in Database:</span>
+          </div>
+          <div class="auth-users-pill-list" id="authUsersPillList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tesseract.js for In-Browser OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
+
+
+
+

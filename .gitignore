@@ -1,0 +1,47 @@
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Database files
+*.db
+*.sqlite3
+
+# Environment configuration
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs & temporary files
+*.log
+*.tmp
+
+# Codebase snapshot
+abc.txt
+
+# Test / sample image assets (not part of source)
+test_*.png
+test_*.jpg
+test_*.jpeg
+
+# Build / distribution artifacts
+dist/
+build/
+*.egg-info/
+
+*.png
+start_app.bat
