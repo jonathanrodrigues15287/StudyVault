@@ -45,3 +45,7 @@ build/
 
 *.png
 start_app.bat
+*.docx
+
+*.png
+*.bat
